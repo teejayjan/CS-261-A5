@@ -1,7 +1,7 @@
 # Course: CS261 - Data Structures
 # Assignment: 5
-# Student:
-# Description:
+# Student: Timothy Jan
+# Description: Implements Hash Map.
 
 
 # Import pre-written DynamicArray and LinkedList classes
@@ -56,59 +56,126 @@ class HashMap:
             out += str(i) + ': ' + str(list) + '\n'
         return out
 
-    def clear(self) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
-
-    def get(self, key: str) -> object:
-        """
-        TODO: Write this implementation
-        """
-        return None
-
-    def put(self, key: str, value: object) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
-
-    def remove(self, key: str) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
-
-    def contains_key(self, key: str) -> bool:
-        """
-        TODO: Write this implementation
-        """
-        return False
-
     def empty_buckets(self) -> int:
-        """
-        TODO: Write this implementation
-        """
-        return 0
+        """Returns the number of empty buckets in the hash table."""
+
+        count = 0
+        for i in range(self.buckets.length()):
+            if self.buckets.get_at_index(i).length() == 0:
+                count += 1
+        return count
 
     def table_load(self) -> float:
-        """
-        TODO: Write this implementation
-        """
-        return 0.0
+        """Returns the current hash table load factor."""
+
+        return float(self.size/self.capacity)
+
+    def clear(self) -> None:
+        """Clears the content of the hash map without changing underlying capacity."""
+
+        for i in range(self.buckets.length()):
+            self.buckets.set_at_index(i, LinkedList())
+        self.size = 0
+
+    def put(self, key: str, value: object) -> None:
+        """Updates the key/value pair in the hash map. If a given key already exists, it is updated with the new value.
+        Otherwise, the key/value pair is added."""
+
+        hash = self.hash_function(key)
+        index = hash % self.capacity
+
+        # bucket is filled
+        if self.buckets.get_at_index(index).contains(key):
+            self.buckets.get_at_index(index).remove(key)
+            self.buckets.get_at_index(index).insert(key, value)
+
+        # bucket is empty
+        else:
+            self.buckets.get_at_index(index).insert(key, value)
+            self.size += 1
+
+    def contains_key(self, key: str) -> bool:
+        """Returns True if the given key is found in the hash map, otherwise returns False."""
+
+        if self.size == 0:
+            return False
+
+        hash = self.hash_function(key)
+        index = hash % self.capacity
+
+        if self.buckets.get_at_index(index).contains(key):
+            return True
+        else:
+            return False
+
+    def get(self, key: str) -> object:
+        """Returns the value associated with the given key. If the key isn't in the hash map, returns None."""
+
+        if self.size == 0:
+            return None
+
+        hash = self.hash_function(key)
+        index = hash % self.capacity
+
+        if self.buckets.get_at_index(index).contains(key):
+            return self.buckets.get_at_index(index).contains(key).value
+
+        # print(self.buckets.get_at_index(index).contains(key))
+
+    def remove(self, key: str) -> None:
+        """Removes the given key and value from the hash map. If the key isn't in the hash map, does nothing."""
+
+        if self.size == 0:
+            return
+
+        hash = self.hash_function(key)
+        index = hash % self.capacity
+
+        if self.buckets.get_at_index(index).contains(key):
+            self.buckets.get_at_index(index).remove(key)
+            self.size -= 1
 
     def resize_table(self, new_capacity: int) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
+        """Changes the capacity of the internal hash table. All existing key/value pairs remain in the new hash
+        map and all hash table links are rehashed. If new capacity is less than 1, does nothing."""
+
+        if new_capacity < 1:
+            return
+
+        # make temp buckets
+        temp_buckets = DynamicArray()
+
+        # fill temp buckets
+        for i in range(new_capacity):
+            temp_buckets.append(LinkedList())
+
+        self.capacity = new_capacity
+
+        # rehash table links
+        for i in range(self.buckets.length()):
+            if self.buckets.get_at_index(i).length() != 0:
+                node = self.buckets.get_at_index(i).head
+                while node is not None:
+                    hash = self.hash_function(node.key)
+                    index = hash % self.capacity
+                    temp_buckets.get_at_index(index).insert(node.key, node.value)
+                    node = node.next
+
+        self.buckets = temp_buckets
 
     def get_keys(self) -> DynamicArray:
-        """
-        TODO: Write this implementation
-        """
-        return DynamicArray()
+        """Returns a Dynamic Array that contains all keys stored in the hash map (in no particular order)."""
+
+        return_array = DynamicArray()
+
+        for i in range(self.buckets.length()):
+            if self.buckets.get_at_index(i).length() != 0:
+                node = self.buckets.get_at_index(i).head
+                while node is not None:
+                    return_array.append(node.key)
+                    node = node.next
+
+        return return_array
 
 
 # BASIC TESTING
