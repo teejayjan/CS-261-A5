@@ -132,8 +132,42 @@ class MinHeap:
 
     def build_heap(self, da: DynamicArray) -> None:
         """Receives a Dynamic Array and builds a proper MinHeap."""
-        pass
 
+        self.heap = DynamicArray()
+        for i in range(da.length()):
+            self.heap.append(da.get_at_index(i))
+        non_leaf_index = (da.length() // 2) - 1
+
+        # examine non-leaf nodes until we've checked through the root
+        while non_leaf_index >= 0:
+            # save indices
+            node_index = non_leaf_index
+            left_child_index = (node_index * 2) + 1
+            right_child_index = (node_index * 2) + 2
+
+            # percolate non-leaf node downward
+            while left_child_index < self.heap.length() and right_child_index < self.heap.length():
+                # only a left child
+                if left_child_index < self.heap.length() < right_child_index:
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(left_child_index):
+                        self.heap.swap(node_index, left_child_index)
+                # check left
+                elif left_child_index < self.heap.length() and self.heap.get_at_index(left_child_index) <= \
+                        self.heap.get_at_index(right_child_index):
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(left_child_index):
+                        self.heap.swap(node_index, left_child_index)
+                    node_index = left_child_index
+                    left_child_index = (node_index * 2) + 1
+                    right_child_index = (node_index * 2) + 2
+                # check right
+                elif right_child_index < self.heap.length() and self.heap.get_at_index(left_child_index) > \
+                        self.heap.get_at_index(right_child_index):
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(right_child_index):
+                        self.heap.swap(node_index, right_child_index)
+                    node_index = right_child_index
+                    left_child_index = (node_index * 2) + 1
+                    right_child_index = (node_index * 2) + 2
+            non_leaf_index -= 1
 
 # BASIC TESTING
 if __name__ == '__main__':
@@ -166,7 +200,6 @@ if __name__ == '__main__':
     while not h.is_empty():
         print(h, end=' ')
         print(h.remove_min())
-
 
     print("\nPDF - build_heap example 1")
     print("--------------------------")
