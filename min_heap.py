@@ -1,7 +1,7 @@
 # Course: CS261 - Data Structures
 # Assignment: 5
-# Student:
-# Description:
+# Student: Timothy Jan
+# Description: Implements min heap.
 
 
 # Import pre-written DynamicArray and LinkedList classes
@@ -45,27 +45,93 @@ class MinHeap:
         return self.heap.length() == 0
 
     def add(self, node: object) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
+        """Adds a new object to the MinHeap maintaining heap property."""
+
+        self.heap.append(node)
+        node_index = self.heap.length() - 1
+        parent_index = (self.heap.length() - 2) // 2  # initial parent index length - 2 to account for zero index
+
+        if node_index <= 0:
+            return
+
+        while self.heap.get_at_index(node_index) < self.heap.get_at_index(parent_index):
+            self.heap.swap(node_index, parent_index)
+            node_index = parent_index
+            parent_index = (node_index - 1) // 2
+            if node_index <= 0:
+                break
 
     def get_min(self) -> object:
-        """
-        TODO: Write this implementation
-        """
-        return None
+        """Returns an object with a minimum key without removing it from the heap. Raises an exception if
+        the heap is empty."""
+
+        if self.is_empty():
+            raise MinHeapException
+
+        return self.heap.get_at_index(0)
 
     def remove_min(self) -> object:
-        """
-        TODO: Write this implementation
-        """
-        return None
+        """Returns an object with a minimum key and removes it from the heap. Raises an exception if the heap is
+        empty."""
+
+        if self.is_empty():
+            raise MinHeapException
+
+        # save min
+        min = self.get_min()
+
+        # array is larger than 1 element
+        if self.heap.length() > 3:
+            # swap first and last, remove last
+            self.heap.swap(0, self.heap.length() - 1)
+            self.heap.pop()
+            # assign starting indices
+            node_index = 0
+            left_child_index = 1
+            right_child_index = 2
+            # iterate until both children are out of bounds
+            while left_child_index < self.heap.length() and right_child_index < self.heap.length():
+                # if only left child is in bounds
+                if left_child_index < self.heap.length() < right_child_index:
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(left_child_index):
+                        self.heap.swap(node_index, left_child_index)
+                # check left
+                elif left_child_index < self.heap.length() and self.heap.get_at_index(left_child_index) <= \
+                        self.heap.get_at_index(right_child_index):
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(left_child_index):
+                        self.heap.swap(node_index, left_child_index)
+                    node_index = left_child_index
+                    left_child_index = (node_index * 2) + 1
+                    right_child_index = (node_index * 2) + 2
+                # check right
+                elif right_child_index < self.heap.length() and self.heap.get_at_index(left_child_index) > \
+                        self.heap.get_at_index(right_child_index):
+                    if self.heap.get_at_index(node_index) > self.heap.get_at_index(right_child_index):
+                        self.heap.swap(node_index, right_child_index)
+                    node_index = right_child_index
+                    left_child_index = (node_index * 2) + 1
+                    right_child_index = (node_index * 2) + 2
+            return min
+
+        # special cases for specific heap sizes
+        elif self.heap.length() == 3:
+            self.heap.swap(0, 2)
+            self.heap.pop()
+            if self.heap.get_at_index(0) > self.heap.get_at_index(1):
+                self.heap.swap(0, 1)
+            return min
+
+        elif self.heap.length() == 2:
+            self.heap.swap(0, 1)
+            self.heap.pop()
+            return min
+
+        else:
+            self.heap.pop()
+            return min
 
     def build_heap(self, da: DynamicArray) -> None:
-        """
-        TODO: Write this implementation
-        """
+        """Receives a Dynamic Array and builds a proper MinHeap."""
         pass
 
 
@@ -88,13 +154,11 @@ if __name__ == '__main__':
         h.add(value)
         print(h)
 
-
     print("\nPDF - get_min example 1")
     print("-----------------------")
     h = MinHeap(['fish', 'bird'])
     print(h)
     print(h.get_min(), h.get_min())
-
 
     print("\nPDF - remove_min example 1")
     print("--------------------------")
