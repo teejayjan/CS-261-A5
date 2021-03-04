@@ -61,10 +61,12 @@ class AVL(BST):
 
 
     def remove(self, value) -> bool:
-        """
-        TODO: Write your implementation
-        """
-        pass
+        """Removes the first instance of specified value from the AVL tree. Returns True if the value was removed,
+        otherwise returns False."""
+
+        if not self.remove_helper(value):
+            return False
+        return True
 
     def rebalance(self, node):
         """Rebalances AVL tree around specified node."""
@@ -146,6 +148,137 @@ class AVL(BST):
         self.update_height(child)
         return child
 
+    def remove_helper(self, value):
+        """Helper method to remove value and replace with in-order successor. (copied from my bst assignment.)"""
+        # we're empty!
+        if self.root is None:
+            return False
+
+        if value == self.root.value:
+            self.remove_first()
+            return True
+
+        # find N/PN
+        def rec_contains(node):
+            # we didn't find the value
+            if node is None:
+                while not n_and_pn.is_empty():
+                    n_and_pn.pop()
+                return False
+            # go left!
+            elif value < node.value:
+                n_and_pn.push(node)
+                if value == node.value:
+                    return n_and_pn
+                return rec_contains(node.left)
+            # go right!
+            elif value >= node.value:
+                n_and_pn.push(node)
+                if value == node.value:
+                    return n_and_pn
+                return rec_contains(node.right)
+
+        n_and_pn = Stack()
+        rec_contains(self.root)
+
+        if n_and_pn.is_empty():
+            return False
+
+        node = n_and_pn.pop()
+        parent_node = n_and_pn.pop()
+
+        # print(parent_node)
+        # print(node)
+
+        # N has no children
+        if node.left is None and node.right is None:
+            if parent_node.left is node:
+                parent_node.left = None
+                return True
+            else:
+                parent_node.right = None
+                return True
+
+        # N has one child
+        elif node.left is None and node.right is not None or node.left is not None and node.right is None:
+            # parent has open slot on right
+            if parent_node.left is not None and parent_node.right is None and parent_node.left is not node:
+                # N's child is on the left
+                if node.left is not None and node.right is None:
+                    parent_node.right = node.left
+                    return True
+                # N's child is on the right
+                elif node.left is None and node.right is not None:
+                    parent_node.right = node.right
+                    return True
+            # parent has an open slot on the left
+            elif parent_node.left is None and parent_node.right is not None and parent_node.right is not node:
+                # N's child is on the left
+                if node.left is not None and node.right is None:
+                    parent_node.right = node.left
+                    return True
+                # N's child is on the right
+                elif node.left is None and node.right is not None:
+                    parent_node.right = node.right
+                    return True
+            # parent has two children
+            else:
+                # N is PN's left child
+                if parent_node.left is node:
+                    # N's child is on the left
+                    if node.left is not None and node.right is None:
+                        parent_node.left = node.left
+                        return True
+                    # N's child is on the right
+                    else:
+                        parent_node.left = node.right
+                        return True
+                # N is PN's right child
+                else:
+                    # N's child is on the left
+                    if node.left is not None and node.right is None:
+                        parent_node.right = node.left
+                        return True
+                    # N's child is on the right
+                    else:
+                        parent_node.right = node.right
+                        return True
+
+        # the dreaded two child
+        elif node.right and node.left:
+            def rec_successor(node):
+                if node.left is None:
+                    s_and_ps.enqueue(node)
+                    return s_and_ps
+                s_and_ps.dequeue()
+                s_and_ps.enqueue(node)
+                return rec_successor(node.left)
+
+            s_and_ps = Queue()
+            s_and_ps.enqueue(node)  # start s_and_ps off with the node we're removing
+            rec_successor(node.right)  # pass in node's right child to go down right tree
+
+            # save S and PS
+            parent_successor = s_and_ps.dequeue()
+            successor = s_and_ps.dequeue()
+
+            # print("successor is: " + str(successor))
+            # print("successor parent is: " + str(parent_successor))
+
+            successor.left = node.left
+
+            if successor != node.right:
+                parent_successor.left = successor.right
+                successor.right = node.right
+
+            # update parent node to point to successor instead of node
+            if successor.value < parent_node.value:
+                parent_node.left = successor
+                return True
+            elif successor.value >= parent_node.value:
+                parent_node.right = successor
+                return True
+
     def update_height(self, node):
         node.height = max(self.height(node.left), self.height(node.right)) + 1
 
@@ -179,38 +312,38 @@ class AVL(BST):
 
 if __name__ == '__main__':
 
-    print("\nPDF - method add() example 1")
-    print("----------------------------")
-    test_cases = (
-        (1, 2, 3),          #RR
-        (3, 2, 1),          #LL
-        (1, 3, 2),          #RL
-        (3, 1, 2),          #LR
-    )
-    for case in test_cases:
-        avl = AVL(case)
-        print(avl)
-
-
-    print("\nPDF - method add() example 2")
-    print("----------------------------")
-    test_cases = (
-        (10, 20, 30, 40, 50),   # RR, RR
-        (10, 30, 30, 50, 40),   # RR, RL
-        (30, 20, 10, 5, 1),     # LL, LL
-        (30, 20, 10, 1, 5),     # LL, LR
-        (5, 4, 6, 3, 7, 2, 8),  # LL, RR
-        (range(0, 30, 3)),
-        (range(0, 31, 3)),
-        (range(0, 34, 3)),
-        (range(10, -10, -2)),
-        ('A', 'B', 'C', 'D', 'E'),
-        (1, 1, 1, 1),
-    )
-    for case in test_cases:
-        avl = AVL(case)
-        print('INPUT  :', case)
-        print('RESULT :', avl)
+    # print("\nPDF - method add() example 1")
+    # print("----------------------------")
+    # test_cases = (
+    #     (1, 2, 3),          #RR
+    #     (3, 2, 1),          #LL
+    #     (1, 3, 2),          #RL
+    #     (3, 1, 2),          #LR
+    # )
+    # for case in test_cases:
+    #     avl = AVL(case)
+    #     print(avl)
+    #
+    #
+    # print("\nPDF - method add() example 2")
+    # print("----------------------------")
+    # test_cases = (
+    #     (10, 20, 30, 40, 50),   # RR, RR
+    #     (10, 30, 30, 50, 40),   # RR, RL
+    #     (30, 20, 10, 5, 1),     # LL, LL
+    #     (30, 20, 10, 1, 5),     # LL, LR
+    #     (5, 4, 6, 3, 7, 2, 8),  # LL, RR
+    #     (range(0, 30, 3)),
+    #     (range(0, 31, 3)),
+    #     (range(0, 34, 3)),
+    #     (range(10, -10, -2)),
+    #     ('A', 'B', 'C', 'D', 'E'),
+    #     (1, 1, 1, 1),
+    # )
+    # for case in test_cases:
+    #     avl = AVL(case)
+    #     print('INPUT  :', case)
+    #     print('RESULT :', avl)
 
 
     print("\nPDF - method remove() example 1")
