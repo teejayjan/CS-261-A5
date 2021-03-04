@@ -1,7 +1,7 @@
 # Course: CS261 - Data Structures
-# Author:
-# Assignment:
-# Description:
+# Author: Timothy Jan
+# Assignment: 5
+# Description: Implements AVL Tree.
 
 import random
 
@@ -24,10 +24,41 @@ class AVLTreeNode(TreeNode):
 
 class AVL(BST):
     def add(self, value):
-        """
-        TODO: Write your implementation
-        """
-        pass
+        """Adds a new value to the tree, maintaining AVL property. Does not allow addition of duplicate values."""
+
+        if self.contains(value):
+            return
+
+        def rec_add(node):
+            # root node
+            if node is None:
+                self.root = AVLTreeNode(value)
+                return self.root
+            # left
+            elif value < node.value:
+                if node.left is not None:
+                    return rec_add(node.left)
+                elif node.left is None and value < node.value:
+                    new_node = AVLTreeNode(value)
+                    node.left = new_node
+                    new_node.parent = node
+                    return new_node
+            # right
+            elif value >= node.value:
+                if node.right is not None:
+                    return rec_add(node.right)
+                elif node.right is None and value >= node.value:
+                    new_node = AVLTreeNode(value)
+                    node.right = new_node
+                    new_node.parent = node
+                    return new_node
+
+        new_node = rec_add(self.root)
+        parent = new_node.parent
+        while parent is not None:
+            self.rebalance(parent)
+            parent = parent.parent
+
 
     def remove(self, value) -> bool:
         """
@@ -35,10 +66,115 @@ class AVL(BST):
         """
         pass
 
+    def rebalance(self, node):
+        """Rebalances AVL tree around specified node."""
+        if self.balance_factor(node) < -1:
+            if self.balance_factor(node.left) > 0:
+                node.left = self.rotate_left(node.left)
+                node.left.parent = node
+            node_parent = node.parent  # save node parent in case it's overwritten in rotate
+            new_root = self.rotate_right(node)
+            new_root.parent = node_parent
+            # node was former root (and therefore has no parent)
+            if node_parent is None:
+                self.root = new_root
+            # old node parent exists
+            if node_parent is not None:
+                # node was node_parent's left child
+                if node_parent.left is node:
+                    node_parent.left = new_root
+                # else, node node_parent's right child
+                else:
+                    node_parent.right = new_root
 
 
+            # if node is self.root:
+            #     self.root = new_root
+            # if node.parent.left is node:
+            #     node.parent.left = new_root
+            # elif node.parent.right is node:
+            #     node.parent.right = new_root
+        elif self.balance_factor(node) > 1:
+            if self.balance_factor(node.right) < 0:
+                node.right = self.rotate_right(node.right)
+                node.right.parent = node
+            node_parent = node.parent  # save node parent in case it's overwritten in rotate
+            new_root = self.rotate_left(node)
+            new_root.parent = node_parent
+            # node was former root (and therefore has no parent)
+            if node_parent is None:
+                self.root = new_root
+            # old node parent exists
+            if node_parent is not None:
+                # node was node_parent's left child
+                if node_parent.left is node:
+                    node_parent.left = new_root
+                # else, node node_parent's right child
+                else:
+                    node_parent.right = new_root
 
+            # if node is self.root:
+            #     self.root = new_root
+            # if node.parent.left is node:
+            #     node.parent.left = new_root
+            # elif node.parent.right is node:
+            #     node.parent.right = new_root
+        else:
+            self.update_height(node)
 
+    def rotate_left(self, node):
+        """Rotates AVL left around specified node."""
+        child = node.right
+        node.right = child.left
+        if node.right is not None:
+            node.right.parent = node
+        child.left = node
+        node.parent = child
+        self.update_height(node)
+        self.update_height(child)
+        return child
+
+    def rotate_right(self, node):
+        """Rotates AVL right around specified node."""
+        child = node.left
+        node.left = child.right
+        if node.left is not None:
+            node.left.parent = node
+        child.right = node
+        node.parent = child
+        self.update_height(node)
+        self.update_height(child)
+        return child
+
+    def update_height(self, node):
+        node.height = max(self.height(node.left), self.height(node.right)) + 1
+
+    def height(self, node):
+        """Returns a specified node's height."""
+        def rec_height(node):  # refined height algorithm with some help from stack overflow
+            if node is None:
+                return -1
+            else:
+                return max(rec_height(node.left), rec_height(node.right)) + 1
+
+        return rec_height(node)
+
+    def balance_factor(self, node):
+        """Returns the balance factor at specified node."""
+        # return self.height(node.right) - self.height(node.left)
+
+        # no children
+        if node.left is None and node.right is None:
+            return 0
+        # two children
+        elif node.left is not None and node.right is not None:
+            return node.right.height - node.left.height
+        # only a left child
+        elif node.left is not None and node.right is None:
+            return -1 - node.left.height
+        # only a right child
+        elif node.left is None and node.right is not None:
+            return node.right.height + 1
 
 
 if __name__ == '__main__':

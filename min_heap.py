@@ -131,7 +131,8 @@ class MinHeap:
             return min
 
     def build_heap(self, da: DynamicArray) -> None:
-        """Receives a Dynamic Array and builds a proper MinHeap."""
+        """Receives a Dynamic Array and builds a proper MinHeap. Current contents of MinHeap are lost upon calling
+        this method."""
 
         self.heap = DynamicArray()
         for i in range(da.length()):
@@ -168,6 +169,7 @@ class MinHeap:
                     left_child_index = (node_index * 2) + 1
                     right_child_index = (node_index * 2) + 2
             non_leaf_index -= 1
+
 
 # BASIC TESTING
 if __name__ == '__main__':
