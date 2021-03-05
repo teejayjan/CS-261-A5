@@ -83,7 +83,6 @@ class AVL(BST):
             parent = parent.parent
         return True
 
-
     def remove_helper(self, value):
         """Helper function to remove specified value. Returns removed node's parent, None if removed node doesn't
         have a parent, or False if specified value doesn't exist in the tree."""
@@ -233,12 +232,11 @@ class AVL(BST):
             if parent_node.left is node:  # node was parent node's left child
                 parent_node.left = successor
                 successor.parent = parent_node
-                return parent_node
+                return successor
             else:  # node was parent node's right child
                 parent_node.right = successor
                 successor.parent = parent_node
-                return parent_node
-
+                return successor
 
     def rebalance(self, node):
         """Rebalances AVL tree around specified node."""
@@ -398,6 +396,30 @@ if __name__ == '__main__':
     # print("Expected: ", [-90394, -71765, -86392, -45261, 4375, 8574, 6893, -3887, -56202, 11146, 34893, 33637, 47112,
     #                      71476, 93218, 74461, 54189, 45310, 9220])
     # print("Result: ", avl.post_order_traversal())
+
+    # print("\nCustom - method remove() example D")
+    # print("-------------------------------")
+    # avl = AVL([-13218, -75324, -86453, -92015, -76860, -83841, -64793, -58968, 23178, -3646, -3787, 11741, 80118, 78541,
+    #            61334, 91055, 90651, 93659])
+    # print("TREE pre order: ", avl.pre_order_traversal())
+    # print("TREE post order: ", avl.post_order_traversal())
+    # avl.remove(-75324)
+    # print("EXPECTED pre order: ", [-13218, -76860, -86453, -92015, -83841, -64793, -58968, 23178, -3646, -3787, 11741,
+    #                                80118, 78541, 61334, 91055, 90651, 93659])
+    # print("EXPECTED post order: ", [-92015, -83841, -86453, -58968, -64793, -76860, -3787, 11741, -3646, 61334, 78541,
+    #                                 90651, 93659, 91055, 80118, 23178, -13218])
+    # print("RESULT pre order: ", avl.pre_order_traversal())
+    # print("RESULT post order: ", avl.post_order_traversal())
+
+    print("\nCustom - method remove() example E")
+    print("-------------------------------")
+    nodes = [61926, -21076, -47614, -72156, -24709, 50499, 8188, 89737, 68841, 94899]
+    avl = AVL(nodes)
+    # for node in nodes:
+    #     avl.add(node)
+    avl.remove(-47614)
+    print("Expected: ", [-72156, -24709, 8188, 50499, -21076, 68841, 94899, 89737, 61926])
+    print("Result: post order", avl.post_order_traversal())
 
     print("\nPDF - method remove() example 1")
     print("-------------------------------")
