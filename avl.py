@@ -26,14 +26,14 @@ class AVL(BST):
     def add(self, value):
         """Adds a new value to the tree, maintaining AVL property. Does not allow addition of duplicate values."""
 
-        if self.contains(value):
-            return
-
         def rec_add(node):
             # root node
             if node is None:
                 self.root = AVLTreeNode(value)
                 return self.root
+            # exit if we've hit a duplicate
+            if value == node.value:
+                return None
             # left
             elif value < node.value:
                 if node.left is not None:
@@ -54,6 +54,8 @@ class AVL(BST):
                     return new_node
 
         new_node = rec_add(self.root)
+        if new_node is None:  # exit if new node was a duplicate (and therefore wasn't added)
+            return
         parent = new_node.parent
         while parent is not None:
             self.rebalance(parent)
@@ -64,9 +66,17 @@ class AVL(BST):
         """Removes the first instance of specified value from the AVL tree. Returns True if the value was removed,
         otherwise returns False."""
 
-        if not self.remove_helper(value):
+        parent = self.remove_helper(value)
+        if parent is False:
             return False
-        return True
+        if parent is not None:
+            while parent is not None:
+                self.rebalance(parent)
+                parent = parent.parent
+            return True
+        # remove helper returns None, which means there is no parent node with which to rotate/balance
+        else:
+            return True
 
     def rebalance(self, node):
         """Rebalances AVL tree around specified node."""
@@ -88,14 +98,6 @@ class AVL(BST):
                 # else, node node_parent's right child
                 else:
                     node_parent.right = new_root
-
-
-            # if node is self.root:
-            #     self.root = new_root
-            # if node.parent.left is node:
-            #     node.parent.left = new_root
-            # elif node.parent.right is node:
-            #     node.parent.right = new_root
         elif self.balance_factor(node) > 1:
             if self.balance_factor(node.right) < 0:
                 node.right = self.rotate_right(node.right)
@@ -114,13 +116,6 @@ class AVL(BST):
                 # else, node node_parent's right child
                 else:
                     node_parent.right = new_root
-
-            # if node is self.root:
-            #     self.root = new_root
-            # if node.parent.left is node:
-            #     node.parent.left = new_root
-            # elif node.parent.right is node:
-            #     node.parent.right = new_root
         else:
             self.update_height(node)
 
@@ -155,49 +150,43 @@ class AVL(BST):
             return False
 
         if value == self.root.value:
-            self.remove_first()
-            return True
+            return self.remove_first()
 
-        # find N/PN
         def rec_contains(node):
-            # we didn't find the value
+            # value isn't in the tree
             if node is None:
-                while not n_and_pn.is_empty():
-                    n_and_pn.pop()
                 return False
-            # go left!
+            # left
             elif value < node.value:
                 n_and_pn.push(node)
                 if value == node.value:
-                    return n_and_pn
-                return rec_contains(node.left)
-            # go right!
+                    return True
+                else:
+                    return rec_contains(node.left)
+            # right
             elif value >= node.value:
                 n_and_pn.push(node)
                 if value == node.value:
-                    return n_and_pn
-                return rec_contains(node.right)
+                    return True
+                else:
+                    return rec_contains(node.right)
 
         n_and_pn = Stack()
-        rec_contains(self.root)
-
-        if n_and_pn.is_empty():
+        result = rec_contains(self.root)
+        if result is False:
             return False
 
         node = n_and_pn.pop()
         parent_node = n_and_pn.pop()
 
-        # print(parent_node)
-        # print(node)
-
         # N has no children
         if node.left is None and node.right is None:
             if parent_node.left is node:
                 parent_node.left = None
-                return True
+                return parent_node
             else:
                 parent_node.right = None
-                return True
+                return parent_node
 
         # N has one child
         elif node.left is None and node.right is not None or node.left is not None and node.right is None:
@@ -206,21 +195,25 @@ class AVL(BST):
                 # N's child is on the left
                 if node.left is not None and node.right is None:
                     parent_node.right = node.left
-                    return True
+                    parent_node.right.parent = parent_node
+                    return parent_node
                 # N's child is on the right
                 elif node.left is None and node.right is not None:
                     parent_node.right = node.right
-                    return True
+                    parent_node.right.parent = parent_node
+                    return parent_node
             # parent has an open slot on the left
             elif parent_node.left is None and parent_node.right is not None and parent_node.right is not node:
                 # N's child is on the left
                 if node.left is not None and node.right is None:
-                    parent_node.right = node.left
-                    return True
+                    parent_node.left = node.left
+                    parent_node.left.parent = parent_node
+                    return parent_node
                 # N's child is on the right
                 elif node.left is None and node.right is not None:
-                    parent_node.right = node.right
-                    return True
+                    parent_node.left = node.right
+                    parent_node.left.parent = parent_node
+                    return parent_node
             # parent has two children
             else:
                 # N is PN's left child
@@ -228,24 +221,28 @@ class AVL(BST):
                     # N's child is on the left
                     if node.left is not None and node.right is None:
                         parent_node.left = node.left
-                        return True
+                        parent_node.left.parent = parent_node
+                        return parent_node
                     # N's child is on the right
                     else:
                         parent_node.left = node.right
-                        return True
+                        parent_node.left.parent = parent_node
+                        return parent_node
                 # N is PN's right child
                 else:
                     # N's child is on the left
                     if node.left is not None and node.right is None:
                         parent_node.right = node.left
-                        return True
+                        parent_node.right.parent = parent_node
+                        return parent_node
                     # N's child is on the right
                     else:
                         parent_node.right = node.right
-                        return True
+                        parent_node.right.parent = parent_node
+                        return parent_node
 
         # the dreaded two child
-        elif node.right and node.left:
+        elif node.right is not None and node.left is not None:
             def rec_successor(node):
                 if node.left is None:
                     s_and_ps.enqueue(node)
@@ -266,31 +263,127 @@ class AVL(BST):
             # print("successor parent is: " + str(parent_successor))
 
             successor.left = node.left
+            successor.left.parent = successor
 
-            if successor != node.right:
+            if successor is not node.right:
                 parent_successor.left = successor.right
+                if parent_successor.left is not None:
+                    parent_successor.left.parent = parent_successor
                 successor.right = node.right
-
-            # update parent node to point to successor instead of node
-            if successor.value < parent_node.value:
+                successor.right.parent = successor
+            # node was parent's left child
+            if parent_node.left is node:
                 parent_node.left = successor
-                return True
-            elif successor.value >= parent_node.value:
+                parent_node.left.parent = parent_node
+                return parent_node
+            # node was parent's right child
+            else:
                 parent_node.right = successor
-                return True
+                parent_node.right.parent = parent_node
+                return parent_node
+
+            # # parent node and successor are not adjacent
+            # if successor is not node.right:
+            #     parent_successor.left = successor.right
+            #     successor.right = node.right
+            #     # successor.parent = node.parent
+            #
+            #     return parent_node
+            #
+            # # parent node and successor are adjacent
+            # elif successor.value < parent_node.value:
+            #     parent_node.left = successor
+            #     parent_node.left.parent = parent_node
+            #     return parent_node
+            # elif successor.value >= parent_node.value:
+            #     parent_node.right = successor
+            #     parent_node.right.parent = parent_node
+            #     return parent_node
+
+    def remove_first(self):
+        """Removes the root node from the Binary Tree. Returns False if the tree is empty and True is the root is
+        removed. (copied from my bst)"""
+
+        # node = self.root
+
+        # we're empty!
+        if self.root is None:
+            return False
+
+        # it's just the root
+        if self.root.left is None and self.root.right is None:
+            self.root = None
+            return None
+
+        # root only has one child
+        if self.root.left is None and self.root.right is not None or \
+                self.root.left is not None and self.root.right is None:
+            # child is on left
+            if self.root.right is None:
+                self.root = self.root.left
+                return self.root
+            # child is on right
+            else:
+                self.root = self.root.right
+                return self.root
+
+        # root has two children
+        # find successor
+        def rec_successor(node):
+            if node.left is None:  # we've reached deepest left down the right tree
+                s_and_ps.enqueue(node)
+                return s_and_ps
+            s_and_ps.dequeue()
+            s_and_ps.enqueue(node)
+            return rec_successor(node.left)
+
+        # node = self.root
+
+        s_and_ps = Queue()
+        s_and_ps.enqueue(self.root)
+        rec_successor(self.root.right)  # start moving down right tree
+
+        # save S and PS
+        parent_successor = s_and_ps.dequeue()
+        successor = s_and_ps.dequeue()
+
+        if self.root.left is successor:
+            successor.right = self.root.right
+            self.root = successor
+            self.root.parent = None
+            return self.root
+
+        if self.root.right is successor:
+            successor.left = self.root.left
+            self.root = successor
+            self.root.parent = None
+            return self.root  # return the root to see if we need to do any rotations
+
+        else:
+            successor.left = self.root.left
+            if successor is not self.root.right:
+                parent_successor.left = successor.right
+                if parent_successor.left is not None:
+                    parent_successor.left.parent = parent_successor
+                successor.right = self.root.right
+                self.root.right.parent = successor
+            self.root = successor
+            self.root.parent = None
+            return parent_successor  # return successor's parent to see if we need to do any rotations
 
     def update_height(self, node):
-        node.height = max(self.height(node.left), self.height(node.right)) + 1
-
-    def height(self, node):
-        """Returns a specified node's height."""
-        def rec_height(node):  # refined height algorithm with some help from stack overflow
-            if node is None:
-                return -1
-            else:
-                return max(rec_height(node.left), rec_height(node.right)) + 1
-
-        return rec_height(node)
+        # node has two children
+        if node.left is not None and node.right is not None:
+            node.height = max(node.left.height, node.right.height) + 1
+        # node has no children
+        elif node.left is None and node.right is None:
+            node.height = 0
+        # node has a left child
+        elif node.left is not None and node.right is None:
+            node.height = node.left.height + 1
+        # node has a right child
+        else:
+            node.height = node.right.height + 1
 
     def balance_factor(self, node):
         """Returns the balance factor at specified node."""
@@ -344,6 +437,12 @@ if __name__ == '__main__':
     #     avl = AVL(case)
     #     print('INPUT  :', case)
     #     print('RESULT :', avl)
+
+    print("\nCustom - method remove() example A")
+    print("-------------------------------")
+    avl = AVL([1, 2, 3, 4, 5])
+    avl.remove(7)
+    print("Result: ", avl)
 
 
     print("\nPDF - method remove() example 1")
