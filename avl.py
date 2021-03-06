@@ -198,7 +198,8 @@ class AVL(BST):
                         self.root.right.parent = successor
                     self.root = successor
                     self.root.parent = None
-                    return parent_successor
+                    self.update_height(parent_successor)
+                    return successor
 
         # VALUE IS NOT THE ROOT
         # check if value is in the tree, and if so, save node to be removed and its parent
@@ -265,11 +266,14 @@ class AVL(BST):
             if parent_node.left is node:  # node was parent node's left child
                 parent_node.left = successor
                 successor.parent = parent_node
+                self.update_height(parent_successor)
                 return successor
             else:  # node was parent node's right child
                 parent_node.right = successor
                 successor.parent = parent_node
+                self.update_height(parent_successor)
                 return successor
+
 
     def rebalance(self, node):
         """Rebalances AVL tree around specified node."""
@@ -284,7 +288,7 @@ class AVL(BST):
             if node_parent is None:
                 self.root = new_root
             # old node parent exists
-            if node_parent is not None:
+            elif node_parent is not None:
                 # node was node_parent's left child
                 if node_parent.left is node:
                     node_parent.left = new_root
@@ -302,7 +306,7 @@ class AVL(BST):
             if node_parent is None:
                 self.root = new_root
             # old node parent exists
-            if node_parent is not None:
+            elif node_parent is not None:
                 # node was node_parent's left child
                 if node_parent.left is node:
                     node_parent.left = new_root
@@ -320,7 +324,6 @@ class AVL(BST):
             node.right.parent = node
         child.left = node
         child.left.parent = child
-        # node.parent = child
         self.update_height(node)
         self.update_height(child)
         return child
@@ -333,42 +336,20 @@ class AVL(BST):
             node.left.parent = node
         child.right = node
         child.right.parent = child
-        # node.parent = child
         self.update_height(node)
         self.update_height(child)
         return child
 
     def update_height(self, node):
-        # node has two children
-        if node.left is not None and node.right is not None:
-            node.height = max(node.left.height, node.right.height) + 1
-        # node has no children
-        elif node.left is None and node.right is None:
-            node.height = 0
-        # node has a left child
-        elif node.left is not None and node.right is None:
-            node.height = node.left.height + 1
-        # node has a right child
-        else:
-            node.height = node.right.height + 1
+        l = node.left.height if node.left else -1
+        r = node.right.height if node.right else -1
+        node.height = max(l, r) + 1
 
     def balance_factor(self, node):
         """Returns the balance factor at specified node."""
-        # return self.height(node.right) - self.height(node.left)
-
-        # no children
-        if node.left is None and node.right is None:
-            return 0
-        # two children
-        elif node.left is not None and node.right is not None:
-            return node.right.height - node.left.height
-        # only a left child
-        elif node.left is not None and node.right is None:
-            return -1 - node.left.height
-        # only a right child
-        elif node.left is None and node.right is not None:
-            return node.right.height + 1
-
+        l = node.left.height if node.left else - 1
+        r = node.right.height if node.right else -1
+        return r - l
 
 
 if __name__ == '__main__':
@@ -587,3 +568,9 @@ if __name__ == '__main__':
     # print('', tree.pre_order_traversal(), tree.in_order_traversal(),
     #       tree.post_order_traversal(), tree.by_level_traversal(),
     #       sep='\n')
+
+    case = (29454, -25678, 84629, -70250, 71956, 59994, 84629, 99144)
+    avl = AVL(case)
+    print(avl, check_pointers(avl))
+    avl.remove(71956)
+    print(avl, check_pointers(avl))
