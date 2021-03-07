@@ -265,12 +265,14 @@ class AVL(BST):
             # Update PN pointers to S
             if parent_node.left is node:  # node was parent node's left child
                 parent_node.left = successor
-                successor.parent = parent_node
+                # successor.parent = parent_node
+                parent_node.left.parent = parent_node
                 self.update_height(parent_successor)
                 return successor
             else:  # node was parent node's right child
                 parent_node.right = successor
-                successor.parent = parent_node
+                parent_node.right.parent = parent_node
+                # successor.parent = parent_node
                 self.update_height(parent_successor)
                 return successor
 
@@ -574,12 +576,3 @@ if __name__ == '__main__':
     # print(avl, check_pointers(avl))
     # avl.remove(71956)
     # print(avl, check_pointers(avl))
-
-    nodes = (-8758, -45270, -57966, -64587, -30086, -31755, -16307, -12775, 56127, 37783, 10369, 44151, 65732, 61396, 63016, 88922)
-    avl = AVL()
-    for node in nodes:
-        avl.add(node)
-    print("Before: ", avl.pre_order_traversal())
-    avl.remove(-45270)
-    print("After: ", avl.pre_order_traversal())
-    print("returning successor: ", [-12775, -31755, -57966, -64587, -30086, -16307, 37783, -8758, 10369, 63016, 56127, 44151, 61396, 65732, 88922])
