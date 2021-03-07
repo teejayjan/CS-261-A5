@@ -267,14 +267,14 @@ class AVL(BST):
                 parent_node.left = successor
                 # successor.parent = parent_node
                 parent_node.left.parent = parent_node
-                self.update_height(parent_successor)
-                return successor
+                # self.update_height(parent_successor)
+                return parent_successor
             else:  # node was parent node's right child
                 parent_node.right = successor
                 parent_node.right.parent = parent_node
                 # successor.parent = parent_node
-                self.update_height(parent_successor)
-                return successor
+                # self.update_height(parent_successor)
+                return parent_successor
 
 
     def rebalance(self, node):
