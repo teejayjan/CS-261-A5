@@ -481,7 +481,7 @@ if __name__ == '__main__':
     #     print('INPUT  :', avl, "DEL:", del_value)
     #     avl.remove(del_value)
     #     print('RESULT :', avl)
-    #     print(check_pointers(avl))
+    #     # print(check_pointers(avl))
     #
     # print("\nPDF - method remove() example 3")
     # print("-------------------------------")
@@ -491,7 +491,7 @@ if __name__ == '__main__':
     #     print('INPUT  :', avl, del_value)
     #     avl.remove(del_value)
     #     print('RESULT :', avl)
-    #     print(check_pointers(avl))
+    #     # print(check_pointers(avl))
     #
     # print("\nPDF - method remove() example 4")
     # print("-------------------------------")
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     #     print('INPUT  :', avl.size(), avl, avl.root)
     #     avl.remove(avl.root.value)
     #     print('RESULT :', avl)
-    #     print(check_pointers(avl))
+    #     # print(check_pointers(avl))
 
     print("\nPDF - method remove() example 5")
     print("-------------------------------")
@@ -569,8 +569,17 @@ if __name__ == '__main__':
     #       tree.post_order_traversal(), tree.by_level_traversal(),
     #       sep='\n')
 
-    case = (29454, -25678, 84629, -70250, 71956, 59994, 84629, 99144)
-    avl = AVL(case)
-    print(avl, check_pointers(avl))
-    avl.remove(71956)
-    print(avl, check_pointers(avl))
+    # case = (29454, -25678, 84629, -70250, 71956, 59994, 84629, 99144)
+    # avl = AVL(case)
+    # print(avl, check_pointers(avl))
+    # avl.remove(71956)
+    # print(avl, check_pointers(avl))
+
+    nodes = (-8758, -45270, -57966, -64587, -30086, -31755, -16307, -12775, 56127, 37783, 10369, 44151, 65732, 61396, 63016, 88922)
+    avl = AVL()
+    for node in nodes:
+        avl.add(node)
+    print("Before: ", avl.pre_order_traversal())
+    avl.remove(-45270)
+    print("After: ", avl.pre_order_traversal())
+    print("returning successor: ", [-12775, -31755, -57966, -64587, -30086, -16307, 37783, -8758, 10369, 63016, 56127, 44151, 61396, 65732, 88922])
