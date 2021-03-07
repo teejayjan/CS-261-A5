@@ -198,7 +198,6 @@ class AVL(BST):
                         self.root.right.parent = successor
                     self.root = successor
                     self.root.parent = None
-                    self.update_height(parent_successor)
                     return parent_successor
 
         # VALUE IS NOT THE ROOT
@@ -265,16 +264,14 @@ class AVL(BST):
             # Update PN pointers to S
             if parent_node.left is node:  # node was parent node's left child
                 parent_node.left = successor
-                # successor.parent = parent_node
                 parent_node.left.parent = parent_node
-                self.update_height(parent_successor)
-                return successor
+                # self.update_height(parent_successor)
+                return parent_successor
             else:  # node was parent node's right child
                 parent_node.right = successor
                 parent_node.right.parent = parent_node
-                # successor.parent = parent_node
-                self.update_height(parent_successor)
-                return successor
+                # self.update_height(parent_successor)
+                return parent_successor
 
 
     def rebalance(self, node):
