@@ -198,8 +198,8 @@ class AVL(BST):
                         self.root.right.parent = successor
                     self.root = successor
                     self.root.parent = None
-                    # self.update_height(parent_successor)
-                    return parent_successor
+                    self.update_height(parent_successor)
+                    return successor
 
         # VALUE IS NOT THE ROOT
         # check if value is in the tree, and if so, save node to be removed and its parent
